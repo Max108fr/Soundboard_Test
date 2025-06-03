@@ -5,23 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Soundboard</title>
   <style>
-    body {
-      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      background-color: #ffffff;
-      color: rgb(0, 0, 0);
-      margin: 0;
-      padding: 20px;
+    * {
+      box-sizing: border-box;
     }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #222;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #1a1a1a;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .master-volume {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .master-volume label {
+      white-space: nowrap;
+    }
+
+    .master-volume input[type="range"] {
+      width: 150px;
+    }
+
     .container {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 10px;
-      max-width: 900px;
+      padding: 20px;
+      max-width: 1200px;
       margin: auto;
     }
+
     .sound-button {
-      background-color: #00ff22cc;
+      background-color: #333;
       border-radius: 8px;
       padding: 10px;
       display: flex;
@@ -29,29 +63,47 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: transform 0.2s;
     }
 
     .sound-button:hover {
-    background-color: #ff000070;
-    color: rgb(255, 255, 255);
-  }
-    .sound-button.active {
-      background-color: #fd2525c5;
-      border: none;
-      color: rgb(255, 255, 255);
-      box-shadow: 0 0 10px #ff0000;
+      background-color: #00ff2abb;
+      opacity: 90%;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
     }
+
+    .sound-button.active {
+      border: 5px, solid rgb(0, 255, 0);
+      color: green;
+    }
+
+    .sound-button img {
+      width: 100%;
+      max-width: 120px;
+      height: auto;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
     .sound-title {
-      font-size: 24px;
+      font-size: 14px;
       margin: 5px 0;
     }
+
     .controls {
       display: flex;
       flex-direction: column;
       gap: 4px;
       width: 100%;
     }
+
     .loop-toggle {
       background-color: #555;
       border: none;
@@ -60,9 +112,11 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .loop-toggle.active {
-      background-color: rgb(102, 180, 102);
+      background-color: #0a0;
     }
+
     input[type="range"] {
       width: 100%;
     }
@@ -97,39 +151,39 @@
     masterGain.gain.value = 1;
     masterGain.connect(context.destination);
 
-    const fadeDuration = 0.8; // Sekunden für Ein-/Ausblenden
+    const fadeDuration = 0.8;
 
     const sounds = [
-      { name: "TOTENREITER", file: "sounds/Platzhalter.mp3", color: "#f8f8ff" },  
-      { name: "Wald-Start", file: "sounds/Wald-Start-Jagd.mp3" },
-      { name: "Kaminfeuer", file: "sounds/Kaminfeuer.mp3" },
-      { name: "Burgmusik", file: "sounds/Burgmusik.mp3" },
-      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3"},
-      { name: "Gruselknarzen", file: "sounds/Gruselknarzen.mp3" },
-      { name: "Kuh", file: "sounds/Kuh.mp3" },
-      { name: "Vögel Frühling", file: "sounds/Voegel-Fruehling.mp3" },
-      { name: "Jagdhorn", file: "sounds/Jagdhorn.mp3" },
-      { name: "Bach", file: "sounds/Bach.mp3" },
-      { name: "Heulen", file: "sounds/Geisterhirsch.mp3" },
-      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3" },
-      { name: "Tor-Ende", file: "sounds/Tor-Ende.mp3" },
-      { name: "KREUZBAUER", file: "sounds/Platzhalter.mp3", color: "#f8f8ff" },
-      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3" },
-      { name: "Regen", file: "sounds/Regen.mp3" },
-      { name: "Lagerfeuer-Gesellschaft", file: "sounds/Lagerfeuer-Gesellschaft.mp3" },
-      { name: "Kaminfeuer", file: "sounds/Kaminfeuer.mp3" },
-      { name: "Kleine Buchdämonen", file: "sounds/Kleine-Buchdaemonen.mp3" },
-      { name: "Vögel Frühling", file: "sounds/Voegel-Fruehling.mp3" },
-      { name: "Hahn", file: "sounds/Hahn.mp3", color: "#ff83fa" },
-      { name: "Menschenmenge", file: "sounds/Menschenmenge.mp3" },
-      { name: "Scheiterhaufen", file: "sounds/Scheiterhaufen.mp3" },   
+      { name: "TOTENREITER", file: "sounds/Platzhalter.mp3", image: "images/deer.png" },  
+      { name: "Wald-Start", file: "sounds/Wald-Start-Jagd.mp3", image: "images/forest.png" },
+      { name: "Kaminfeuer", file: "sounds/Kaminfeuer.mp3", image: "images/fireplace.png" },
+      { name: "Burgmusik", file: "sounds/Burgmusik.mp3", image: "images/harp.png" },
+      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3", image: "images/night.png"},
+      { name: "Gruselknarzen", file: "sounds/Gruselknarzen.mp3", image: "images/ghost.png" },
+      { name: "Kuh", file: "sounds/Kuh.mp3", image: "images/cow.png" },
+      { name: "Vögel Frühling", file: "sounds/Voegel-Fruehling.mp3", image: "images/birds.png" },
+      { name: "Jagdhorn", file: "sounds/Jagdhorn.mp3", image: "images/horn.png" },
+      { name: "Bach", file: "sounds/Bach.mp3", image: "images/stream.png" },
+      { name: "Heulen", file: "sounds/Geisterhirsch.mp3", image: "images/skull.png" },
+      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3", image: "images/night.png" },
+      { name: "Tor-Ende", file: "sounds/Tor-Ende.mp3", image: "images/castle.png" },
+      { name: "KREUZBAUER", file: "sounds/Platzhalter.mp3", image: "images/crossroads.png" },
+      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3", image: "images/night.png" },
+      { name: "Regen", file: "sounds/Regen.mp3", image: "images/rain.png" },
+      { name: "Lagerfeuer-Gesellschaft", file: "sounds/Lagerfeuer-Gesellschaft.mp3", image: "images/dance.png" },
+      { name: "Kaminfeuer", file: "sounds/Kaminfeuer.mp3", image: "images/fireplace.png" },
+      { name: "Kleine Buchdämonen", file: "sounds/Kleine-Buchdaemonen.mp3", image: "images/book.png" },
+      { name: "Vögel Frühling", file: "sounds/Voegel-Fruehling.mp3", image: "images/birds.png" },
+      { name: "Hahn", file: "sounds/Hahn.mp3", image: "images/rooster.png"},
+      { name: "Menschenmenge", file: "sounds/Menschenmenge.mp3", image: "images/mob.png" },
+      { name: "Scheiterhaufen", file: "sounds/Scheiterhaufen.mp3", image: "images/pyre.png" },   
       // ... bis zu 28 individuell definierbare Sounds
     ];
 
     const soundboard = document.getElementById('soundboard');
     const masterVolumeSlider = document.getElementById('masterVolume');
     const buffers = {};
-    const activeStates = {}; // { file: { source, gainNode } }
+    const activeStates = {};
 
     async function loadSound(file) {
       const response = await fetch(file);
@@ -140,7 +194,10 @@
     function createSoundElement(sound) {
       const container = document.createElement('div');
       container.classList.add('sound-button');
-      container.style.backgroundColor = sound.color;
+
+      const image = document.createElement('img');
+      image.src = sound.image;
+      image.alt = sound.name;
 
       const title = document.createElement('div');
       title.classList.add('sound-title');
@@ -163,6 +220,7 @@
       controls.appendChild(loopBtn);
       controls.appendChild(volumeSlider);
 
+      container.appendChild(image);
       container.appendChild(title);
       container.appendChild(controls);
       soundboard.appendChild(container);
@@ -213,11 +271,9 @@
           container.classList.add('active');
 
           source.onended = () => {
-            if (!source.loop) {
-              if (activeStates[sound.file]?.source === source) {
-                delete activeStates[sound.file];
-                container.classList.remove('active');
-              }
+            if (!source.loop && activeStates[sound.file]?.source === source) {
+              delete activeStates[sound.file];
+              container.classList.remove('active');
             }
           };
         }
