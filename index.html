@@ -66,18 +66,30 @@
     input[type="range"] {
       width: 100%;
     }
-    .master-volume {
-      margin-top: 30px;
+
+    @media (max-width: 600px) {
+      .master-volume {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 10px;
+      }
+
+      .master-volume input[type="range"] {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Soundboard</h1>
+  <header>
+    <h1>Soundboard</h1>
+    <div class="master-volume">
+      <label for="masterVolume">Master-Lautstärke:</label>
+      <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="1">
+    </div>
+  </header>
+
   <div class="container" id="soundboard"></div>
-  <div class="master-volume">
-    <label for="masterVolume">Master-Lautstärke:</label>
-    <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="1">
-  </div>
 
   <script>
     const context = new (window.AudioContext || window.webkitAudioContext)();
@@ -175,7 +187,6 @@
         const isActive = !!activeStates[sound.file];
 
         if (isActive) {
-          // FADE OUT
           const { source, gainNode } = activeStates[sound.file];
           const now = context.currentTime;
           gainNode.gain.cancelScheduledValues(now);
@@ -195,7 +206,6 @@
           source.connect(gainNode);
           source.start();
 
-          // FADE IN
           const now = context.currentTime;
           gainNode.gain.linearRampToValueAtTime(userVolume, now + fadeDuration);
 
@@ -225,7 +235,6 @@
       masterGain.gain.value = parseFloat(masterVolumeSlider.value);
     });
 
-    // Browser AudioContext aktivieren
     window.addEventListener('click', () => {
       if (context.state !== 'running') {
         context.resume();
