@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<<<<<<< HEAD
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Soundboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #fff2d9;
+      color: rgb(0, 0, 0);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      max-width: 900px;
+      margin: auto;
+    }
+    .sound-button {
+      background-color: #444;
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .sound-button.active {
+      box-shadow: 0 0 10px #66bb6a;
+    }
+    .sound-title {
+      font-size: 24px;
+      margin: 5px 0;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+    }
+    .loop-toggle {
+      background-color: #555;
+      border: none;
+      color: white;
+      padding: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .loop-toggle.active {
+      background-color: #0a0;
+    }
+    input[type="range"] {
+      width: 100%;
+    }
+    .master-volume {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Soundboard</h1>
+  <div class="container" id="soundboard"></div>
+  <div class="master-volume">
+    <label for="masterVolume">Master-Lautstärke:</label>
+    <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="1">
+  </div>
+
+  <script>
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const masterGain = context.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(context.destination);
+
+    const fadeDuration = 0.8; // Sekunden für Ein-/Ausblenden
+
+    const sounds = [
+      { name: "KREUZBAUER ->", file: "sounds/Platzhalter.mp3", color: "#f8f8ff" },  
+      { name: "Wald-Start", file: "sounds/Wald-Start-Jagd.mp3", color: "#ffa54f" },
+      { name: "Kaminfeuer", file: "sounds/Kaminfeuer.mp3", color: "#43cd80" },
+      { name: "Burgmusik", file: "sounds/Burgmusik.mp3", color: "#ff7f24" },
+      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3", color: "#adff2f" },
+      { name: "Gruselknarzen", file: "sounds/Gruselknarzen.mp3", color: "#ffa54f" },
+      { name: "Kuh", file: "sounds/Kuh.mp3", color: "#b3ee3a" },
+      { name: "Vögel Frühling", file: "sounds/Voegel-Fruehling.mp3", color: "#f4a460" },
+      { name: "Jagdhorn", file: "sounds/Jagdhorn.mp3", color: "#90ee90" },
+      { name: "Bach", file: "sounds/Bach.mp3", color: "#ff4040" },
+      { name: "Heulen", file: "sounds/Geisterhirsch.mp3", color: "#9acd32" },
+      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3", color: "#ee3b3b" },
+      { name: "Tor-Ende", file: "sounds/Tor-Ende.mp3", color: "#bcee68" },
+      { name: "KREUZBAUER ->", file: "sounds/Platzhalter.mp3", color: "#f8f8ff" },
+      { name: "Wald-Nacht", file: "sounds/Wald-Nacht.mp3", color: "#ee7ae9" },
+      { name: "Regen", file: "sounds/Regen.mp3", color: "#98f5ff" },
+      { name: "Lagerfeuer-Gesellschaft", file: "sounds/Lagerfeuer-Gesellschaft.mp3", color: "#b452cd" },
+      { name: "Kaminfeuer", file: "sounds/Kaminfeuer.mp3", color: "#00bfff" },
+      { name: "Kleine Buchdämonen", file: "sounds/Kleine-Buchdaemonen.mp3", color: "#ee00ee" },
+      { name: "Vögel Frühling", file: "sounds/Voegel-Fruehling.mp3", color: "#00ced1" },
+      { name: "Hahn", file: "sounds/Hahn.mp3", color: "#ff83fa" },
+      { name: "Menschenmenge", file: "sounds/Menschenmenge.mp3", color: "#4682b4" },
+      { name: "Scheiterhaufen", file: "sounds/Scheiterhaufen.mp3", color: "#ffbbff" },   
+      // ... bis zu 28 individuell definierbare Sounds
+    ];
+
+    const soundboard = document.getElementById('soundboard');
+    const masterVolumeSlider = document.getElementById('masterVolume');
+    const buffers = {};
+    const activeStates = {}; // { file: { source, gainNode } }
+
+    async function loadSound(file) {
+      const response = await fetch(file);
+      const arrayBuffer = await response.arrayBuffer();
+      return await context.decodeAudioData(arrayBuffer);
+    }
+
+    function createSoundElement(sound) {
+      const container = document.createElement('div');
+      container.classList.add('sound-button');
+      container.style.backgroundColor = sound.color;
+
+      const title = document.createElement('div');
+      title.classList.add('sound-title');
+      title.textContent = sound.name;
+
+      const loopBtn = document.createElement('button');
+      loopBtn.classList.add('loop-toggle');
+      loopBtn.textContent = 'Loop';
+      loopBtn.dataset.loop = 'false';
+
+      const volumeSlider = document.createElement('input');
+      volumeSlider.type = 'range';
+      volumeSlider.min = 0;
+      volumeSlider.max = 1;
+      volumeSlider.step = 0.01;
+      volumeSlider.value = 1;
+
+      const controls = document.createElement('div');
+      controls.classList.add('controls');
+      controls.appendChild(loopBtn);
+      controls.appendChild(volumeSlider);
+
+      container.appendChild(title);
+      container.appendChild(controls);
+      soundboard.appendChild(container);
+
+      let userVolume = parseFloat(volumeSlider.value);
+
+      volumeSlider.addEventListener('input', () => {
+        userVolume = parseFloat(volumeSlider.value);
+        const state = activeStates[sound.file];
+        if (state) state.gainNode.gain.setValueAtTime(userVolume, context.currentTime);
+      });
+
+      loopBtn.addEventListener('click', () => {
+        const isLooping = loopBtn.dataset.loop === 'true';
+        loopBtn.dataset.loop = (!isLooping).toString();
+        loopBtn.classList.toggle('active', !isLooping);
+      });
+
+      container.addEventListener('click', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+
+        const isActive = !!activeStates[sound.file];
+
+        if (isActive) {
+          // FADE OUT
+          const { source, gainNode } = activeStates[sound.file];
+          const now = context.currentTime;
+          gainNode.gain.cancelScheduledValues(now);
+          gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+          gainNode.gain.linearRampToValueAtTime(0, now + fadeDuration);
+          source.stop(now + fadeDuration);
+          delete activeStates[sound.file];
+          container.classList.remove('active');
+        } else {
+          const source = context.createBufferSource();
+          source.buffer = buffers[sound.file];
+          source.loop = loopBtn.dataset.loop === 'true';
+
+          const gainNode = context.createGain();
+          gainNode.gain.value = 0;
+          gainNode.connect(masterGain);
+          source.connect(gainNode);
+          source.start();
+
+          // FADE IN
+          const now = context.currentTime;
+          gainNode.gain.linearRampToValueAtTime(userVolume, now + fadeDuration);
+
+          activeStates[sound.file] = { source, gainNode };
+          container.classList.add('active');
+
+          source.onended = () => {
+            if (!source.loop) {
+              if (activeStates[sound.file]?.source === source) {
+                delete activeStates[sound.file];
+                container.classList.remove('active');
+              }
+            }
+          };
+        }
+      });
+    }
+
+    async function init() {
+      for (const sound of sounds) {
+        buffers[sound.file] = await loadSound(sound.file);
+        createSoundElement(sound);
+      }
+    }
+
+    masterVolumeSlider.addEventListener('input', () => {
+      masterGain.gain.value = parseFloat(masterVolumeSlider.value);
+    });
+
+    // Browser AudioContext aktivieren
+    window.addEventListener('click', () => {
+      if (context.state !== 'running') {
+        context.resume();
+      }
+    }, { once: true });
+
+    init();
+  </script>
+</body>
+</html>
+=======
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soundboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: white;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+        .sound-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 180px;
+            height: 120px;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .sound-button:hover {
+            filter: brightness(1.2);
+        }
+        .info {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Soundboard</h1>
+    <div class="container" id="soundboard"></div>
+    <div class="info" id="info"></div>
+
+    <script>
+        const sounds = [
+            { name: "01 Schule", file: "01_Schule.mp3", color: "#ff5733" },
+            { name: "02 Klingel", file: "01_Klingel.mp3", color: "#33ff57" },
+            { name: "03 Kampf START", file: "02_Fight-Start.mp3", image: "hihat.jpg" },
+            { name: "03 Kampf LOOP", file: "02_Fight-Loop.mp3", image: "clap.jpg" },
+            { name: "03 Kampf LOOSE", file: "02_Fight-Game-Over-03.mp3", image: "bass.jpg" },
+            { name: "03 Kampf WIN", file: "02_Fight-Win.mp3", image: "synth.jpg" },
+            { name: "04 Kasse Tod", file: "08_Kasse-Tod.mp3", image: "tom.jpg" },
+            { name: "05 Toilette", file: "12_Toilette.mp3", image: "crash.jpg" },
+            { name: "06 Alien START", file: "16_Alien-2_Take-Off.mp3", image: "openhat.jpg" },
+            { name: "06 Alien KOFFERRAUM", file: "16_Alien-2_Kofferraum.mp3", image: "ride.jpg" },
+            { name: "07 Kirche", file: "17_Kirche.mp3", image: "bell.jpg" },
+            { name: "08 Nacht", file: "18_Nacht.mp3", image: "fx.jpg" },
+            { name: "01 Schule 02", file: "01_Schule_02.mp3", image: "vocal.jpg" },
+            { name: "Chord", file: "sound14.mp3", image: "chord.jpg" },
+            { name: "Perc", file: "sound15.mp3", image: "perc.jpg" },
+            { name: "808", file: "sound16.mp3", image: "808.jpg" }
+            ];
+
+const audioElements = {};
+const soundboard = document.getElementById("soundboard");
+const info = document.getElementById("info");
+
+sounds.forEach((sound) => {
+    const btn = document.createElement("button");
+    btn.classList.add("sound-button");
+    btn.innerHTML = `<img src="${sound.image}" alt="${sound.name}"><span>${sound.name}</span>`;
+    btn.onclick = () => toggleSound(sound.file, sound.name);
+    soundboard.appendChild(btn);
+    
+    const audio = new Audio(sound.file);
+    audio.loop = false;
+    audioElements[sound.file] = audio;
+});
+
+function toggleSound(sound, name) {
+    const audio = audioElements[sound];
+    if (!audio.paused) {
+        fadeOut(audio);
+    } else {
+        audio.volume = 1;
+        audio.play();
+        updateInfo(audio, name);
+    }
+}
+
+function fadeOut(audio) {
+    let fadeInterval = setInterval(() => {
+        if (audio.volume > 0.05) {
+            audio.volume -= 0.05;
+        } else {
+            clearInterval(fadeInterval);
+            audio.pause();
+            audio.currentTime = 0;
+        }
+    }, 50);
+}
+
+function updateInfo(audio, name) {
+    function updateTime() {
+        const remaining = (audio.duration - audio.currentTime).toFixed(1);
+        info.innerHTML = `${name} - Remaining: ${remaining} sec`;
+        if (!audio.paused) {
+            requestAnimationFrame(updateTime);
+        } else {
+            info.innerHTML = "";
+        }
+    }
+    updateTime();
+}
+</script>
+</body>
+</html>
+>>>>>>> f6f26c6b5c377b8eeb45c2e1d1245e1bfb755486
